@@ -3,37 +3,69 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+	"os"
 	"strings"
+	"time"
 
-	"github.com/PuerkitoBio/goquery"
+	"github.com/go-co-op/gocron"
+
+	"github.com/joho/godotenv"
 )
 
+type Config struct {
+	MIQPortalUrl     string
+	SlackApiUrl      string
+	SlackApiToken    string
+	SlackChannelName string
+	Cron             string
+}
+
+func NewConfig() Config {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("failed to load config", err)
+	}
+
+	return Config{
+		MIQPortalUrl:     os.Getenv("MIQ_PORTAL_URL"),
+		SlackApiUrl:      os.Getenv("SLACK_API_URL"),
+		SlackApiToken:    os.Getenv("SLACK_API_TOKEN"),
+		SlackChannelName: os.Getenv("SLACK_CHANNEL_NAME"),
+		Cron:             os.Getenv("CRON"),
+	}
+}
+
 func main() {
-	res, err := http.Get("https://allocation.miq.govt.nz/portal/")
+	config := NewConfig()
+
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.Cron(config.Cron).Do(func() {
+		checkMiqPortal(config)
+	})
+	scheduler.StartBlocking()
+}
+
+func checkMiqPortal(config Config) {
+	miqManager := NewMiqManager(config.MIQPortalUrl)
+	availableDates, err := miqManager.fetchAvailableDates()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to fetch available date: %v", err)
 	}
-	defer func() {
-		err := res.Body.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	fmt.Println(availableDates)
 
-	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+	icon := ":no_entry_sign: Nothing available :cry:"
+	if len(availableDates) > 0 {
+		icon = ":white_check_mark:"
 	}
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	text := fmt.Sprintf(
+		` %s %s`,
+		icon,
+		strings.Join(availableDates, ","),
+	)
 
-	availableDates, exists := doc.Find("#accommodation-calendar-home").Attr("data-arrival-dates")
-	if !exists {
-		log.Fatal("no available date")
+	slackManager := NewSlackManager(config.SlackApiUrl, config.SlackApiToken)
+	if err := slackManager.SendMessage(config.SlackChannelName, text); err != nil {
+		log.Fatalf("failed to send slack message: %v", err)
 	}
-
-	fmt.Printf("Available: %s", strings.Split(availableDates, "_"))
+	log.Println("Done checking MIQ")
 }
