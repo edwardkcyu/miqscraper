@@ -41,6 +41,7 @@ func NewConfig() Config {
 
 func main() {
 	config := NewConfig()
+	log.Printf("%s %s", config.MIQPortalUrl, config.Cron)
 
 	scheduler := gocron.NewScheduler(time.UTC)
 	scheduler.Cron(config.Cron).Do(func() {
