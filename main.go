@@ -57,16 +57,19 @@ func checkMiqPortal(config Config) {
 	}
 	fmt.Println(availableDates)
 
+	formattedAvailableDates := make([]string, len(availableDates))
+	for i, availableDate := range availableDates {
+		date, _ := time.Parse("2006-01-02", availableDate)
+		dateString := date.Format("2006-01-02(Mon)")
+		formattedAvailableDates[i] = dateString
+	}
+
 	icon := ":no_entry_sign: Nothing available :cry:"
 	if len(availableDates) > 0 {
 		icon = ":white_check_mark:"
 	}
 
-	text := fmt.Sprintf(
-		` %s %s`,
-		icon,
-		strings.Join(availableDates, ","),
-	)
+	text := fmt.Sprintf(`%s %s`, icon, strings.Join(formattedAvailableDates, ","))
 
 	slackManager := NewSlackManager(config.SlackApiUrl, config.SlackApiToken)
 	if err := slackManager.SendMessage(config.SlackChannelName, text); err != nil {
