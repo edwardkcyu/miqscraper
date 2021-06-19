@@ -15,3 +15,14 @@ spec:
       containers:
         - name: miqscraper
           image: edwardkcyu/miqscraper:latest
+          env:
+          - name: MIQ_PORTAL_URL
+            value: $MIQ_PORTAL_URL
+          - name: SLACK_API_URL
+            value: $SLACK_API_URL
+          - name: SLACK_API_TOKEN
+            value: $SLACK_API_TOKEN
+          - name: SLACK_CHANNEL_NAME
+            value: $SLACK_CHANNEL_NAME
+          - name: CRON
+            value: $CRON
