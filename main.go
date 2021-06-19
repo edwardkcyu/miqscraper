@@ -22,7 +22,12 @@ type Config struct {
 
 func NewConfig() Config {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("failed to load config", err)
+		log.Println("no .env is loaded", err)
+	}
+
+	cron := os.Getenv("CRON")
+	if cron == "" {
+		cron = "*/1 * * * *"
 	}
 
 	return Config{
@@ -30,7 +35,7 @@ func NewConfig() Config {
 		SlackApiUrl:      os.Getenv("SLACK_API_URL"),
 		SlackApiToken:    os.Getenv("SLACK_API_TOKEN"),
 		SlackChannelName: os.Getenv("SLACK_CHANNEL_NAME"),
-		Cron:             os.Getenv("CRON"),
+		Cron:             cron,
 	}
 }
 
