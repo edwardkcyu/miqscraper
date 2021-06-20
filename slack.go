@@ -67,23 +67,25 @@ func (s SlackManager) GetChannelId(channelName string) (string, error) {
 
 type sendMessageResponse struct {
 	OK    bool   `json:"ok"`
+	Ts    string `json:"ts"`
 	Error string `json:"error"`
 }
 
-func (s SlackManager) SendMessage(channelName string, text string) error {
+func (s SlackManager) SendMessage(channelName string, text string, threadId string) (string, error) {
 	channelId, err := s.GetChannelId(channelName)
 	if err != nil {
-		return errors.Wrap(err, "failed to get channel id")
+		return "", errors.Wrap(err, "failed to get channel id")
 	}
 
 	client := &http.Client{}
 
 	reqBody, err := json.Marshal(map[string]string{
-		"channel": channelId,
-		"text":    text,
+		"channel":   channelId,
+		"text":      text,
+		"thread_ts": threadId,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal chat.postMessage body")
+		return "", errors.Wrap(err, "failed to marshal chat.postMessage body")
 	}
 
 	reqBodyBuffer := bytes.NewBuffer(reqBody)
@@ -93,30 +95,30 @@ func (s SlackManager) SendMessage(channelName string, text string) error {
 		reqBodyBuffer,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to send chat.postMessage request")
+		return "", errors.Wrap(err, "failed to send chat.postMessage request")
 	}
 	s.prepareHeader(req)
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "failed to do request")
+		return "", errors.Wrap(err, "failed to do request")
 	}
 	defer resp.Body.Close()
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrap(err, "failed to read chat.postMessage response")
+		return "", errors.Wrap(err, "failed to read chat.postMessage response")
 	}
 
 	var sendMessageResponse sendMessageResponse
 	if err := json.Unmarshal(respBody, &sendMessageResponse); err != nil {
-		return errors.Wrap(err, "failed to unmarshal sendMessageResponse")
+		return "", errors.Wrap(err, "failed to unmarshal sendMessageResponse")
 	}
 
 	if !sendMessageResponse.OK {
-		return errors.New(sendMessageResponse.Error)
+		return "", errors.New(sendMessageResponse.Error)
 	}
 
-	return nil
+	return sendMessageResponse.Ts, nil
 }

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -17,17 +15,11 @@ type Config struct {
 	SlackApiUrl      string
 	SlackApiToken    string
 	SlackChannelName string
-	Cron             string
 }
 
 func NewConfig() Config {
 	if err := godotenv.Load(); err != nil {
-		log.Println("no .env is loaded", err)
-	}
-
-	cron := os.Getenv("CRON")
-	if cron == "" {
-		cron = "*/1 * * * *"
+		log.Println("no .env is loaded")
 	}
 
 	return Config{
@@ -35,47 +27,24 @@ func NewConfig() Config {
 		SlackApiUrl:      os.Getenv("SLACK_API_URL"),
 		SlackApiToken:    os.Getenv("SLACK_API_TOKEN"),
 		SlackChannelName: os.Getenv("SLACK_CHANNEL_NAME"),
-		Cron:             cron,
 	}
 }
 
 func main() {
 	config := NewConfig()
-	log.Printf("%s %s", config.MIQPortalUrl, config.Cron)
+	log.Printf("%s %s", config.MIQPortalUrl, config.SlackChannelName)
+
+	main := NewMiqChecker(
+		NewMiqManager(config.MIQPortalUrl),
+		NewSlackManager(config.SlackApiUrl, config.SlackApiToken),
+	)
 
 	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.Every(10).Seconds().Do(func() {
-		checkMiqPortal(config)
-	})
+	if _, err := scheduler.Every(10).Seconds().Do(func() {
+		main.checkMiqPortal(config)
+	}); err != nil {
+		log.Fatalf("failed to schedule a job: %v", err)
+	}
 	scheduler.SingletonMode()
 	scheduler.StartBlocking()
-}
-
-func checkMiqPortal(config Config) {
-	miqManager := NewMiqManager(config.MIQPortalUrl)
-	availableDates, err := miqManager.fetchAvailableDates()
-	if err != nil {
-		log.Fatalf("failed to fetch available date: %v", err)
-	}
-	fmt.Println(availableDates)
-
-	formattedAvailableDates := make([]string, len(availableDates))
-	for i, availableDate := range availableDates {
-		date, _ := time.Parse("2006-01-02", availableDate)
-		dateString := date.Format("2006-01-02(Mon)")
-		formattedAvailableDates[i] = dateString
-	}
-
-	icon := ":no_entry_sign: Nothing available :cry:"
-	if len(availableDates) > 0 {
-		icon = ":white_check_mark:"
-	}
-
-	text := fmt.Sprintf(`%s %s`, icon, strings.Join(formattedAvailableDates, ","))
-
-	slackManager := NewSlackManager(config.SlackApiUrl, config.SlackApiToken)
-	if err := slackManager.SendMessage(config.SlackChannelName, text); err != nil {
-		log.Fatalf("failed to send slack message: %v", err)
-	}
-	log.Println("Done checking MIQ")
 }
