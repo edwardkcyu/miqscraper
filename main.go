@@ -44,9 +44,10 @@ func main() {
 	log.Printf("%s %s", config.MIQPortalUrl, config.Cron)
 
 	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.Cron(config.Cron).Do(func() {
+	scheduler.Every(10).Seconds().Do(func() {
 		checkMiqPortal(config)
 	})
+	scheduler.SingletonMode()
 	scheduler.StartBlocking()
 }
 
