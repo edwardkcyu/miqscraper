@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type MiqChecker struct {
@@ -20,10 +21,10 @@ func NewMiqChecker(miqManager *MiqManager, slackManager *SlackManager) *MiqCheck
 	}
 }
 
-func (m *MiqChecker) checkMiqPortal(config Config) {
+func (m *MiqChecker) checkMiqPortal(slackChannelName string) error {
 	availableDates, err := m.miqManager.fetchAvailableDates()
 	if err != nil {
-		log.Fatalf("failed to fetch available date: %v", err)
+		return errors.Wrap(err, "failed to fetch available date: %v")
 	}
 	fmt.Println(availableDates)
 
@@ -43,12 +44,14 @@ func (m *MiqChecker) checkMiqPortal(config Config) {
 
 	text := fmt.Sprintf(`%s %s`, icon, strings.Join(formattedAvailableDates, ","))
 
-	threadId, err := m.slackManager.SendMessage(config.SlackChannelName, text, m.threadId)
+	threadId, err := m.slackManager.SendMessage(slackChannelName, text, m.threadId)
 	if err != nil {
-		log.Fatalf("failed to send slack message: %v", err)
+		return errors.Wrap(err, "failed to send slack message: %v")
 	}
 
 	if !hasAvailableDates && m.threadId == "" {
 		m.threadId = threadId
 	}
+
+	return nil
 }

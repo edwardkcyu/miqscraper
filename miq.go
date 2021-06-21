@@ -19,17 +19,24 @@ func NewMiqManager(url string) *MiqManager {
 }
 
 func (m MiqManager) fetchAvailableDates() ([]string, error) {
-	res, err := http.Get(m.url)
+	req, err := http.NewRequest(http.MethodGet, m.url, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create miq portal request")
+	}
+	req.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to access MIQ portal")
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	if res.StatusCode != 200 {
-		return nil, errors.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+	if resp.StatusCode != 200 {
+		return nil, errors.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read dom document")
 	}
