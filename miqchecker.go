@@ -9,7 +9,8 @@ import (
 )
 
 type MiqChecker struct {
-	threadId     string
+	lastThreadId string
+	lastText     string
 	miqManager   *MiqManager
 	slackManager *SlackManager
 }
@@ -39,18 +40,22 @@ func (m *MiqChecker) checkMiqPortal(slackChannelName string) error {
 	hasAvailableDates := len(availableDates) > 0
 	if hasAvailableDates {
 		icon = ":white_check_mark:"
-		m.threadId = ""
 	}
 
 	text := fmt.Sprintf(`%s %s`, icon, strings.Join(formattedAvailableDates, ","))
+	isTextDifferent := text != m.lastText
+	if isTextDifferent {
+		m.lastThreadId = ""
+		m.lastText = text
+	}
 
-	threadId, err := m.slackManager.SendMessage(slackChannelName, text, m.threadId)
+	threadId, err := m.slackManager.SendMessage(slackChannelName, text, m.lastThreadId)
 	if err != nil {
 		return errors.Wrap(err, "failed to send slack message: %v")
 	}
 
-	if !hasAvailableDates && m.threadId == "" {
-		m.threadId = threadId
+	if isTextDifferent {
+		m.lastThreadId = threadId
 	}
 
 	return nil
