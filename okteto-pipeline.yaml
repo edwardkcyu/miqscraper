@@ -1,4 +1,4 @@
 deploy:
-- envsubst < k8s.yaml > k8s.yaml
-- ls && cat k8s.yaml
+- envsubst < k8s.template.yaml > k8s.yaml
+- env && ls && cat k8s.yaml
 - kubectl apply -f k8s.yaml
