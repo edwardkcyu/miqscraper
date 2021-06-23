@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -28,6 +29,8 @@ func (m *MiqChecker) checkMiqPortal(slackChannelName string) error {
 		return errors.Wrap(err, "failed to fetch available date: %v")
 	}
 	fmt.Println(availableDates)
+
+	sort.Strings(availableDates)
 
 	formattedAvailableDates := make([]string, len(availableDates))
 	for i, availableDate := range availableDates {
