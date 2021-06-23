@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: miqscraper
-          image: edwardkcyu/miqscraper:bin-latest
+          image: edwardkcyu/miqscraper:latest
           imagePullPolicy: Always
           env:
             - name: MIQ_PORTAL_URL
