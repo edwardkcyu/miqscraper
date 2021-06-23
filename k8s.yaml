@@ -17,5 +17,5 @@ spec:
           image: k8s.gcr.io/busybox
           command: [ "/bin/sh", "-c", "env && echo && tail -f /dev/null" ]
           env:
-            - name: A_VALUE
-              value: "helloworld"
+            - name: MIQ_PORTAL_URL
+              value: $MIQ_PORTAL_URL

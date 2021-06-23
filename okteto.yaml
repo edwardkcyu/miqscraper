@@ -1,3 +1,0 @@
-environment:
-  - MIQ_PORTAL_URL=$MIQ_PORTAL_URL
-  - VALUE_FROM_OKTETO_YAML=${USER:peter}
