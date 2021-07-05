@@ -1,1 +1,1 @@
-worker: go build -o main
+worker: go build -o main && main
