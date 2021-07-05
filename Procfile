@@ -1,1 +1,1 @@
-worker: go build -o main && main
+web: bin/miqscraper
