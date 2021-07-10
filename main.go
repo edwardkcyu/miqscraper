@@ -34,7 +34,7 @@ func NewConfig() Config {
 
 func main() {
 	config := NewConfig()
-	log.Printf("%s %s", config.MIQPortalUrl, config.SlackChannelName)
+	log.Printf("%s %s %s", config.MIQPortalUrl, config.SlackChannelName, config.SlackTargetChannelName)
 
 	main := NewMiqChecker(
 		NewMiqManager(config.MIQPortalUrl),
