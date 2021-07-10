@@ -11,10 +11,11 @@ import (
 )
 
 type Config struct {
-	MIQPortalUrl     string
-	SlackApiUrl      string
-	SlackApiToken    string
-	SlackChannelName string
+	MIQPortalUrl           string
+	SlackApiUrl            string
+	SlackApiToken          string
+	SlackChannelName       string
+	SlackTargetChannelName string
 }
 
 func NewConfig() Config {
@@ -23,10 +24,11 @@ func NewConfig() Config {
 	}
 
 	return Config{
-		MIQPortalUrl:     os.Getenv("MIQ_PORTAL_URL"),
-		SlackApiUrl:      os.Getenv("SLACK_API_URL"),
-		SlackApiToken:    os.Getenv("SLACK_API_TOKEN"),
-		SlackChannelName: os.Getenv("SLACK_CHANNEL_NAME"),
+		MIQPortalUrl:           os.Getenv("MIQ_PORTAL_URL"),
+		SlackApiUrl:            os.Getenv("SLACK_API_URL"),
+		SlackApiToken:          os.Getenv("SLACK_API_TOKEN"),
+		SlackChannelName:       os.Getenv("SLACK_CHANNEL_NAME"),
+		SlackTargetChannelName: os.Getenv("SLACK_TARGET_CHANNEL_NAME"),
 	}
 }
 
@@ -37,11 +39,13 @@ func main() {
 	main := NewMiqChecker(
 		NewMiqManager(config.MIQPortalUrl),
 		NewSlackManager(config.SlackApiUrl, config.SlackApiToken),
+		config.SlackChannelName,
+		config.SlackTargetChannelName,
 	)
 
 	scheduler := gocron.NewScheduler(time.UTC)
 	if _, err := scheduler.Every(10).Seconds().Do(func() {
-		if err := main.checkMiqPortal(config.SlackChannelName); err != nil {
+		if err := main.checkMiqPortal(); err != nil {
 			log.Printf("failed to check miq portal: %v", err)
 		}
 	}); err != nil {
