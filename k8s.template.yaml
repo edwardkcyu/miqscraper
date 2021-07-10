@@ -25,3 +25,5 @@ spec:
               value: $SLACK_API_TOKEN
             - name: SLACK_CHANNEL_NAME
               value: $SLACK_CHANNEL_NAME
+            - name: SLACK_TARGET_CHANNEL_NAME
+              value: $SLACK_TARGET_CHANNEL_NAME
