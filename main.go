@@ -36,7 +36,7 @@ func main() {
 	config := NewConfig()
 	log.Printf("%s %s %s", config.MIQPortalUrl, config.SlackChannelName, config.SlackTargetChannelName)
 
-	main := NewMiqChecker(
+	task := NewCheckerTask(
 		NewMiqManager(config.MIQPortalUrl),
 		NewSlackManager(config.SlackApiUrl, config.SlackApiToken),
 		config.SlackChannelName,
@@ -45,7 +45,7 @@ func main() {
 
 	scheduler := gocron.NewScheduler(time.UTC)
 	if _, err := scheduler.Every(10).Seconds().Do(func() {
-		if err := main.checkMiqPortal(); err != nil {
+		if err := task.checkMiqPortal(); err != nil {
 			log.Printf("failed to check miq portal: %v", err)
 		}
 	}); err != nil {

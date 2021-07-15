@@ -40,7 +40,7 @@ func TestMiqChecker_prepareSlackMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := NewMiqChecker(nil, nil, "", "")
+			m := CheckerTask(nil, nil, "", "")
 			gotMessage, gotHasTargetDates, err := m.prepareSlackMessage(tt.args.availableDates)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("prepareSlackMessage() error = %v, wantErr %v", err, tt.wantErr)

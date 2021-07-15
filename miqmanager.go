@@ -24,6 +24,7 @@ func (m MiqManager) fetchAvailableDates() ([]string, error) {
 		return nil, errors.Wrap(err, "failed to create miq portal request")
 	}
 	req.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36")
+	req.Header.Add("cache-control", "no-store")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

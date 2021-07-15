@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type MiqChecker struct {
+type CheckerTask struct {
 	lastThreadId       string
 	lastText           string
 	slackChannel       string
@@ -18,8 +18,8 @@ type MiqChecker struct {
 	slackManager       *SlackManager
 }
 
-func NewMiqChecker(miqManager *MiqManager, slackManager *SlackManager, slackChannel string, slackTargetChannel string) *MiqChecker {
-	return &MiqChecker{
+func NewCheckerTask(miqManager *MiqManager, slackManager *SlackManager, slackChannel string, slackTargetChannel string) *CheckerTask {
+	return &CheckerTask{
 		miqManager:         miqManager,
 		slackManager:       slackManager,
 		slackChannel:       slackChannel,
@@ -27,7 +27,7 @@ func NewMiqChecker(miqManager *MiqManager, slackManager *SlackManager, slackChan
 	}
 }
 
-func (m *MiqChecker) prepareSlackMessage(availableDates []string) (string, bool, error) {
+func (m *CheckerTask) prepareSlackMessage(availableDates []string) (string, bool, error) {
 	sort.Strings(availableDates)
 
 	formattedAvailableDates := make([]string, len(availableDates))
@@ -58,7 +58,7 @@ func (m *MiqChecker) prepareSlackMessage(availableDates []string) (string, bool,
 	return text, hasTargetDates, nil
 }
 
-func (m *MiqChecker) checkMiqPortal() error {
+func (m *CheckerTask) checkMiqPortal() error {
 	availableDates, err := m.miqManager.fetchAvailableDates()
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch available date: %v")
