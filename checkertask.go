@@ -61,7 +61,7 @@ func (m *CheckerTask) prepareSlackMessage(availableDates []string) (string, bool
 func (m *CheckerTask) checkMiqPortal() error {
 	availableDates, err := m.miqManager.fetchAvailableDates()
 	if err != nil {
-		return errors.Wrap(err, "failed to fetch available date: %v")
+		return errors.Wrap(err, "failed to fetch available date")
 	}
 	fmt.Println(availableDates)
 
