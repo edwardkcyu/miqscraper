@@ -44,7 +44,7 @@ func main() {
 	)
 
 	scheduler := gocron.NewScheduler(time.UTC)
-	if _, err := scheduler.Every(10).Seconds().Do(func() {
+	if _, err := scheduler.Every(8).Seconds().Do(func() {
 		if err := task.checkMiqPortal(); err != nil {
 			log.Printf("failed to check miq portal: %v", err)
 		}

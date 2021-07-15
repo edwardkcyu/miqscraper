@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -63,7 +64,7 @@ func (m *CheckerTask) checkMiqPortal() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch available date")
 	}
-	fmt.Println(availableDates)
+	log.Println(availableDates)
 
 	text, hasTargetDates, err := m.prepareSlackMessage(availableDates)
 	if err != nil {
