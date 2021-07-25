@@ -69,7 +69,6 @@ func (m MiqManager) fetchAvailableDates() ([]string, error) {
 			}
 
 			availableDates = append(availableDates, dateParsed.Format("2006-01-02"))
-			log.Println(class, exists, childText)
 		})
 	})
 
