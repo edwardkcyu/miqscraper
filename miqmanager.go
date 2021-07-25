@@ -57,18 +57,19 @@ func (m MiqManager) fetchAvailableDates() ([]string, error) {
 				return
 			}
 
-			isAvailable, exists := childSelection.Attr("class")
-			if exists && isAvailable == "no" {
+			class, exists := childSelection.Attr("class")
+			if exists && class == "no" {
 				return
 			}
 
 			dateParsed, err := time.Parse("2 January 2006", fmt.Sprintf("%s %s", childText, month))
 			if err != nil {
 				log.Printf("error parsing child %v", err)
+				return
 			}
 
 			availableDates = append(availableDates, dateParsed.Format("2006-01-02"))
-			log.Println(isAvailable, exists, childText)
+			log.Println(class, exists, childText)
 		})
 	})
 
