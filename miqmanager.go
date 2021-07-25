@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/pkg/errors"
@@ -44,24 +45,30 @@ func (m MiqManager) fetchAvailableDates() ([]string, error) {
 		return nil, errors.Wrap(err, "failed to read dom document")
 	}
 
-	availableDates := []string{}
+	const cutset = " \n "
+	var availableDates []string
 	doc.Find(".abc__m").Each(func(_ int, monthSelection *goquery.Selection) {
-		month := strings.Trim(monthSelection.Find(".abc__m__title").Text(), " \n")
+		month := strings.Trim(monthSelection.Find(".abc__m__title").Text(), cutset)
 
 		monthSelection.Find(".abc__d__item").Each(func(_ int, dateSelection *goquery.Selection) {
-			childSelection := dateSelection.Children()
+			childSelection := dateSelection.ChildrenFiltered("div:first-child")
+			childText := strings.Trim(childSelection.Text(), cutset)
+			if childText == "" {
+				return
+			}
+
 			isAvailable, exists := childSelection.Attr("class")
-			if !exists {
+			if exists && isAvailable == "no" {
 				return
 			}
 
-			if isAvailable == "no" {
-				return
+			dateParsed, err := time.Parse("2 January 2006", fmt.Sprintf("%s %s", childText, month))
+			if err != nil {
+				log.Printf("error parsing child %v", err)
 			}
 
-			date := childSelection.Text()
-			availableDates = append(availableDates, fmt.Sprintf("%s %s", date, month))
-			log.Println(isAvailable, exists, childSelection.Text())
+			availableDates = append(availableDates, dateParsed.Format("2006-01-02"))
+			log.Println(isAvailable, exists, childText)
 		})
 	})
 
