@@ -21,7 +21,7 @@ func TestMiqChecker_prepareSlackMessage(t *testing.T) {
 		{
 			name: "has Tuesday",
 			args: args{
-				availableDates: []string{"2021-09-14"},
+				availableDates: []string{"14 September 2021"},
 			},
 			wantMessage:        ":white_check_mark: 14/09 (Tue)",
 			wantHasTargetDates: true,
@@ -30,7 +30,7 @@ func TestMiqChecker_prepareSlackMessage(t *testing.T) {
 		{
 			name: "no Tuesday",
 			args: args{
-				availableDates: []string{"2021-08-11"},
+				availableDates: []string{"11 August 2021"},
 			},
 			wantMessage:        ":eyes: 11/08 (Wed)",
 			wantHasTargetDates: false,

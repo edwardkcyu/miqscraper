@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -42,14 +44,26 @@ func (m MiqManager) fetchAvailableDates() ([]string, error) {
 		return nil, errors.Wrap(err, "failed to read dom document")
 	}
 
-	availableDates, exists := doc.Find("#accommodation-calendar-home").Attr("data-arrival-dates")
-	if !exists {
-		return nil, errors.New("dom attribute #accommodation-calendar-home not found")
-	}
+	availableDates := []string{}
+	doc.Find(".abc__m").Each(func(_ int, monthSelection *goquery.Selection) {
+		month := strings.Trim(monthSelection.Find(".abc__m__title").Text(), " \n")
 
-	if availableDates == "" {
-		return []string{}, nil
-	}
+		monthSelection.Find(".abc__d__item").Each(func(_ int, dateSelection *goquery.Selection) {
+			childSelection := dateSelection.Children()
+			isAvailable, exists := childSelection.Attr("class")
+			if !exists {
+				return
+			}
 
-	return strings.Split(availableDates, "_"), nil
+			if isAvailable == "no" {
+				return
+			}
+
+			date := childSelection.Text()
+			availableDates = append(availableDates, fmt.Sprintf("%s %s", date, month))
+			log.Println(isAvailable, exists, childSelection.Text())
+		})
+	})
+
+	return availableDates, nil
 }

@@ -33,7 +33,7 @@ func (m *CheckerTask) prepareSlackMessage(availableDates []string) (string, bool
 
 	formattedAvailableDates := make([]string, len(availableDates))
 	for i, availableDate := range availableDates {
-		date, err := time.Parse("2006-01-02", availableDate)
+		date, err := time.Parse("2 January 2006", availableDate)
 		if err != nil {
 			return "", false, errors.Wrap(err, "error parsing date")
 		}
