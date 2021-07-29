@@ -46,11 +46,17 @@ func (m MiqManager) fetchAvailableDates() ([]string, error) {
 	}
 
 	const cutset = " \n "
-	var availableDates []string
-	doc.Find(".abc__m").Each(func(_ int, monthSelection *goquery.Selection) {
-		month := strings.Trim(monthSelection.Find(".abc__m__title").Text(), cutset)
 
-		monthSelection.Find(".abc__d__item").Each(func(_ int, dateSelection *goquery.Selection) {
+	rootClass, exists := doc.Find(".m-auto").ChildrenFiltered("div:first-child").Attr("class")
+	if !exists {
+		return nil, errors.New("unable to get root class")
+	}
+
+	var availableDates []string
+	doc.Find(fmt.Sprintf(".%s__m", rootClass)).Each(func(_ int, monthSelection *goquery.Selection) {
+		month := strings.Trim(monthSelection.Find(fmt.Sprintf(".%s__m__title", rootClass)).Text(), cutset)
+
+		monthSelection.Find(fmt.Sprintf(".%s__d__item", rootClass)).Each(func(_ int, dateSelection *goquery.Selection) {
 			childSelection := dateSelection.ChildrenFiltered("div:first-child")
 			childText := strings.Trim(childSelection.Text(), cutset)
 			if childText == "" {
